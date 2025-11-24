@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: lite-admin-db
+    environment:
+      POSTGRES_USER: pt
+      POSTGRES_PASSWORD: pt@123
+      POSTGRES_DB: lite_admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
