@@ -14,6 +14,18 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    container_name: lite-admin-redis
+    ports:
+      - "6389:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
