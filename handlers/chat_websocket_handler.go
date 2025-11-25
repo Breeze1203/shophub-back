@@ -599,10 +599,6 @@ func (h *ChatWebSocketHandler) GetMessages(c echo.Context) error {
 
 // 获取用户颜色（根据ID生成）
 func getUserColor(userID uint) string {
-	colors := []string{
-		"#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A",
-		"#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E2",
-		"#F8B500", "#E74C3C", "#3498DB", "#2ECC71",
-	}
+	colors := []string{"#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8", "#F7DC6F", "#BB8FCE"}
 	return colors[userID%uint(len(colors))]
 }
