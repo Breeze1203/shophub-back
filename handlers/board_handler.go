@@ -75,7 +75,7 @@ func (m *WhiteboardRoomManager) GetOrCreateRoom(roomID string) *WhiteboardRoom {
 		Unregister: make(chan *WhiteboardClient, 16),
 		ctx:        ctx,
 		cancel:     cancel,
-		redis:      m.redis, // 🔑 初始化redis字段
+		redis:      m.redis,
 	}
 	m.rooms[roomID] = room
 
@@ -95,7 +95,6 @@ func (room *WhiteboardRoom) run() {
 			room.Clients[client.ID] = client
 			room.mu.Unlock()
 
-			// 🔑 添加用户到Redis
 			room.addUserToRedis(client)
 
 		case client := <-room.Unregister:
@@ -105,8 +104,6 @@ func (room *WhiteboardRoom) run() {
 				close(client.Send)
 			}
 			room.mu.Unlock()
-
-			// 🔑 从Redis移除用户
 			room.removeUserFromRedis(client)
 
 		case message := <-room.Broadcast:
@@ -133,7 +130,7 @@ func (room *WhiteboardRoom) run() {
 	}
 }
 
-// 🔑 添加用户到Redis
+// 添加用户到Redis
 func (room *WhiteboardRoom) addUserToRedis(client *WhiteboardClient) {
 	if room.redis == nil {
 		return
@@ -142,7 +139,7 @@ func (room *WhiteboardRoom) addUserToRedis(client *WhiteboardClient) {
 	ctx := context.Background()
 	key := fmt.Sprintf("whiteboard:room:%s:online_users", room.ID)
 	field := fmt.Sprintf("%d", client.UserID)
-
+	print("加入房间")
 	userInfo := UserInfo{
 		UserID:   client.UserID,
 		Username: client.Username,
@@ -164,7 +161,7 @@ func (room *WhiteboardRoom) addUserToRedis(client *WhiteboardClient) {
 	room.redis.Expire(ctx, key, 24*time.Hour)
 }
 
-// 🔑 从Redis移除用户
+// 从Redis移除用户
 func (room *WhiteboardRoom) removeUserFromRedis(client *WhiteboardClient) {
 	if room.redis == nil {
 		return
@@ -193,7 +190,7 @@ func (room *WhiteboardRoom) removeUserFromRedis(client *WhiteboardClient) {
 	}
 }
 
-// 🔑 从Redis获取在线用户列表（统一方法名）
+// 从Redis获取在线用户列表
 func (room *WhiteboardRoom) GetOnlineUsers() ([]UserInfo, error) {
 	if room.redis == nil {
 		return []UserInfo{}, nil
@@ -337,7 +334,6 @@ func (h *WhiteboardWebSocketHandler) writePump(client *WhiteboardClient) {
 }
 
 func (h *WhiteboardWebSocketHandler) sendInitData(client *WhiteboardClient, room *WhiteboardRoom) {
-	// 🔑 使用统一的方法名
 	users, err := room.GetOnlineUsers()
 	if err != nil {
 		log.Printf("Failed to get online users from Redis: %v", err)
