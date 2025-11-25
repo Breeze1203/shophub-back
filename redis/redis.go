@@ -3,8 +3,9 @@ package redis
 import (
 	"context"
 	"fmt"
-	"github.com/redis/go-redis/v9"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type RedisClient struct {
@@ -67,20 +68,25 @@ func (r *RedisClient) Close() error {
 	return r.Client.Close()
 }
 
-// GetOnlineUsers 获取指定聊天室的所有在线用户
-func (r *RedisClient) GetOnlineUsers(ctx context.Context, roomID uint) (map[string]string, error) {
-	// 构造 key
-	key := fmt.Sprintf("chat:room:%d:online_users", roomID)
-	// 从Redis获取所有在线用户 (HGetAll)
-	result, err := r.Client.HGetAll(ctx, key).Result()
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch online users for room %s: %w", roomID, err)
-	}
-	return result, nil
-}
-
 type HGetAllResult struct {
 	Data   map[string]string `json:"data"`
 	Error  string            `json:"error,omitempty"`
 	Status int               `json:"status"`
+}
+
+// 用户信息结构（用于在线列表）
+type UserInfo struct {
+	UserID   uint   `json:"user_id"`
+	Username string `json:"username"`
+	Color    string `json:"color"`
+}
+
+// GetOnlineUsers 获取指定房间的在线用户
+func (r *RedisClient) GetOnlineUsers(ctx context.Context, roomType string, roomID uint) (map[string]string, error) {
+	key := fmt.Sprintf("%s:room:%d:online_users", roomType, roomID)
+	result, err := r.Client.HGetAll(ctx, key).Result()
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch online users for key %s: %w", key, err)
+	}
+	return result, nil
 }
