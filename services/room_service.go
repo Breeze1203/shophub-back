@@ -73,7 +73,7 @@ func (s *RoomService) ListRooms() ([]models.RoomWithUser, error) {
 	}
 	for i := 0; i < len(results); i++ {
 		ctx := context.Background()
-		users, redisErr := redis.GetRedis().GetOnlineUsers(ctx, results[i].ID)
+		users, redisErr := redis.GetRedis().GetOnlineUsers(ctx, results[i].Type, results[i].ID)
 		if redisErr != nil {
 			continue
 		}
