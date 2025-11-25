@@ -45,7 +45,7 @@ func (s *Server) SetupRoutes(authMiddleware echo.MiddlewareFunc) {
 			chat.GET("/:roomId/online-users", s.ChatWebSocketHandler.GetOnlineUsers) // 获取在线用户列表
 		}
 		protected.GET("/chat/:roomId/ws", s.ChatWebSocketHandler.HandleWebSocket)
-		protected.GET("/board/:roomId/ws", s.ChatWebSocketHandler.HandleWebSocket)
+		protected.GET("/board/:roomId/ws", s.WhiteboardWebSocketHandler.HandleWebSocket)
 		board := protected.Group("/whiteboard")
 		{
 			board.GET("/:roomId/online-users", s.WhiteboardWebSocketHandler.GetWhiteboardRoomOnlineUsers)
