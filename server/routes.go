@@ -37,7 +37,6 @@ func (s *Server) SetupRoutes(authMiddleware echo.MiddlewareFunc) {
 			rooms.POST("/:id/join", s.RoomHandler.JoinRoom) // 加入房间（验证密码）
 			rooms.DELETE("/:id", s.RoomHandler.DeleteRoom)  // 删除房间
 		}
-
 		// Chat routes
 		chat := protected.Group("/chat")
 		{
