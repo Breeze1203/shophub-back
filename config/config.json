@@ -20,7 +20,14 @@
         "scopes": ["user:email"]
       },
       "facebook": {},
-      "custom": {}
+      "wechat": {
+        "client_id": "你的微信 AppID",
+        "client_secret": "你的微信 AppSecret",
+        "redirect_url": "http://localhost:5173/auth/callback/wechat",
+        "scopes": ["snsapi_login"]
+      },
+      "custom": {
+      }
     }
   }
 }

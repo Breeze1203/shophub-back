@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 )
 
@@ -31,7 +32,8 @@ type AuthConfig struct {
 		Google   OAuthProvider            `json:"google"`
 		GitHub   OAuthProvider            `json:"github"`
 		Facebook OAuthProvider            `json:"facebook"`
-		Custom   map[string]OAuthProvider `json:"custom"` // Support custom OAuth providers
+		Wechat   OAuthProvider            `json:"wechat"`
+		Custom   map[string]OAuthProvider `json:"custom"`
 	} `json:"oauth"`
 }
 
@@ -40,7 +42,12 @@ func LoadConfig() (config Config, err error) {
 	if err != nil {
 		return config, err
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		closeErr := file.Close()
+		if closeErr != nil {
+			log.Printf("Error closing config file: %v", closeErr)
+		}
+	}(file)
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&config)
 	if err != nil {
