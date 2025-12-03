@@ -5,12 +5,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/facebook"
 	"golang.org/x/oauth2/github"
 	"golang.org/x/oauth2/google"
-	"net/http"
 )
+
+var wechatEndpoint = oauth2.Endpoint{
+	AuthURL:  "https://open.weixin.qq.com/connect/qrconnect",
+	TokenURL: "https://api.weixin.qq.com/sns/oauth2/access_token",
+}
 
 type OAuthService struct {
 	providers map[string]*oauth2.Config
@@ -61,7 +68,15 @@ func NewOAuthService(config *config.AuthConfig) *OAuthService {
 			Endpoint:     facebook.Endpoint,
 		}
 	}
-
+	if config.OAuth.Wechat.ClientID != "" {
+		service.providers["wechat"] = &oauth2.Config{
+			ClientID:     config.OAuth.Wechat.ClientID,
+			ClientSecret: config.OAuth.Wechat.ClientSecret,
+			RedirectURL:  config.OAuth.Wechat.RedirectURL,
+			Scopes:       config.OAuth.Wechat.Scopes,
+			Endpoint:     wechatEndpoint,
+		}
+	}
 	// Custom OAuth providers
 	for name, provider := range config.OAuth.Custom {
 		service.providers[name] = &oauth2.Config{
@@ -103,6 +118,8 @@ func (s *OAuthService) GetUserInfo(provider string, token *oauth2.Token) (*OAuth
 		return s.getGitHubUserInfo(token)
 	case "facebook":
 		return s.getFacebookUserInfo(token)
+	case "wechat":
+		return s.getWeChatUserInfo(token)
 	default:
 		return s.getCustomUserInfo(provider, token)
 	}
@@ -192,4 +209,54 @@ func (s *OAuthService) GetAvailableProviders() []string {
 		providers = append(providers, name)
 	}
 	return providers
+}
+
+func (s *OAuthService) getWeChatUserInfo(token *oauth2.Token) (*OAuthUserInfo, error) {
+	// 微信的 openid 藏在 token.Extra("openid")
+	openid, ok := token.Extra("openid").(string)
+	if !ok || openid == "" {
+		return nil, fmt.Errorf("wechat openid not found in token")
+	}
+	// 调用微信用户信息接口
+	url := "https://api.weixin.qq.com/sns/userinfo"
+	req, _ := http.NewRequest("GET", url, nil)
+	q := req.URL.Query()
+	q.Add("access_token", token.AccessToken)
+	q.Add("openid", openid)
+	req.URL.RawQuery = q.Encode()
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("wechat userinfo error: %s", string(body))
+	}
+
+	var data struct {
+		OpenID     string `json:"openid"`
+		Nickname   string `json:"nickname"`
+		HeadImgURL string `json:"headimgurl"`
+		UnionID    string `json:"unionid,omitempty"`
+		ErrCode    int    `json:"errcode,omitempty"`
+		ErrMsg     string `json:"errmsg,omitempty"`
+	}
+
+	if err := json.Unmarshal(body, &data); err != nil {
+		return nil, err
+	}
+
+	if data.ErrCode != 0 {
+		return nil, fmt.Errorf("wechat api error %d: %s", data.ErrCode, data.ErrMsg)
+	}
+
+	return &OAuthUserInfo{
+		ID:       data.OpenID, // 微信唯一标识
+		Email:    "",          // 网页登录不返回邮箱
+		Name:     data.Nickname,
+		Avatar:   data.HeadImgURL,
+		Provider: "wechat",
+	}, nil
 }
