@@ -7,6 +7,7 @@ import (
 	"LiteAdmin/models"
 	"LiteAdmin/redis"
 	"LiteAdmin/services"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -15,13 +16,12 @@ import (
 )
 
 type Server struct {
-	Echo                       *echo.Echo
-	DB                         *gorm.DB
-	Config                     *config.Config
-	AuthHandler                *handlers.AuthHandler
-	RoomHandler                *handlers.RoomHandler
-	ChatWebSocketHandler       *handlers.ChatWebSocketHandler
-	WhiteboardWebSocketHandler *handlers.WhiteboardWebSocketHandler
+	Echo                 *echo.Echo
+	DB                   *gorm.DB
+	Config               *config.Config
+	AuthHandler          *handlers.AuthHandler
+	RoomHandler          *handlers.RoomHandler
+	ChatWebSocketHandler *handlers.ChatWebSocketHandler
 }
 
 func NewServer() *Server {
@@ -49,15 +49,13 @@ func NewServer() *Server {
 	authHandler := handlers.NewAuthHandler(authService, oauthService)
 	roomHandler := handlers.NewRoomHandler(roomService)
 	chatWebSocketHandler := handlers.NewChatWebSocketHandler(db, redis.GetRedis().Client)
-	whiteboardWebSocketHandler := handlers.NewWhiteboardWebSocketHandler(db, redis.GetRedis().Client)
 	s := &Server{
-		Echo:                       e,
-		DB:                         db,
-		Config:                     &cfg,
-		AuthHandler:                authHandler,
-		RoomHandler:                roomHandler,
-		ChatWebSocketHandler:       chatWebSocketHandler,
-		WhiteboardWebSocketHandler: whiteboardWebSocketHandler,
+		Echo:                 e,
+		DB:                   db,
+		Config:               &cfg,
+		AuthHandler:          authHandler,
+		RoomHandler:          roomHandler,
+		ChatWebSocketHandler: chatWebSocketHandler,
 	}
 	// --- 设置路由 ---
 	authMiddleware := custommiddleware.AuthMiddleware(authService)
