@@ -7,6 +7,7 @@ func AutoMigrateAll(db *gorm.DB) error {
 		&User{},
 		&Room{},
 		&Message{},
+		&CustomerSession{},
 	)
 	if err != nil {
 		return err

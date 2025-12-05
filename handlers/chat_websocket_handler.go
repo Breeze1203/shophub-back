@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -456,6 +457,11 @@ func (h *ChatWebSocketHandler) handleChatMessage(client *ChatClient, payload map
 		log.Println("Database queue full, dropping message")
 	}
 
+	// 如果是客服房间,更新会话信息
+	if strings.HasPrefix(client.Room.ID, "customer_service_") {
+		go h.updateCustomerServiceSession(client.Room.ID, content)
+	}
+
 	// 立即广播消息
 	broadcastMsg := map[string]interface{}{
 		"type": "message",
@@ -474,6 +480,19 @@ func (h *ChatWebSocketHandler) handleChatMessage(client *ChatClient, payload map
 	client.Room.Broadcast <- &BroadcastMessage{
 		Data: broadcastMsg,
 	}
+}
+
+func (h *ChatWebSocketHandler) updateCustomerServiceSession(roomID string, lastMessage string) {
+	var session models.CustomerSession
+	if err := h.db.Where("room_id = ?", roomID).First(&session).Error; err != nil {
+		return
+	}
+	session.LastMessage = lastMessage
+	session.UpdatedAt = time.Now()
+	if session.Status == "pending" {
+		session.Status = "active"
+	}
+	h.db.Save(&session)
 }
 
 func (h *ChatWebSocketHandler) handleTyping(client *ChatClient, payload map[string]interface{}) {

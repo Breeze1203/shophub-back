@@ -16,12 +16,13 @@ import (
 )
 
 type Server struct {
-	Echo                 *echo.Echo
-	DB                   *gorm.DB
-	Config               *config.Config
-	AuthHandler          *handlers.AuthHandler
-	RoomHandler          *handlers.RoomHandler
-	ChatWebSocketHandler *handlers.ChatWebSocketHandler
+	Echo                   *echo.Echo
+	DB                     *gorm.DB
+	Config                 *config.Config
+	AuthHandler            *handlers.AuthHandler
+	RoomHandler            *handlers.RoomHandler
+	ChatWebSocketHandler   *handlers.ChatWebSocketHandler
+	CustomerServiceHandler *handlers.CustomerServiceHandler
 }
 
 func NewServer() *Server {
@@ -46,16 +47,18 @@ func NewServer() *Server {
 	authService := services.NewAuthService(db, &cfg.Auth)
 	oauthService := services.NewOAuthService(&cfg.Auth)
 	roomService := services.NewRoomService(db)
+	customerHandler := handlers.NewCustomerServiceHandler(db)
 	authHandler := handlers.NewAuthHandler(authService, oauthService)
 	roomHandler := handlers.NewRoomHandler(roomService)
 	chatWebSocketHandler := handlers.NewChatWebSocketHandler(db, redis.GetRedis().Client)
 	s := &Server{
-		Echo:                 e,
-		DB:                   db,
-		Config:               &cfg,
-		AuthHandler:          authHandler,
-		RoomHandler:          roomHandler,
-		ChatWebSocketHandler: chatWebSocketHandler,
+		Echo:                   e,
+		DB:                     db,
+		Config:                 &cfg,
+		AuthHandler:            authHandler,
+		RoomHandler:            roomHandler,
+		ChatWebSocketHandler:   chatWebSocketHandler,
+		CustomerServiceHandler: customerHandler,
 	}
 	// --- 设置路由 ---
 	authMiddleware := custommiddleware.AuthMiddleware(authService)

@@ -44,5 +44,11 @@ func (s *Server) SetupRoutes(authMiddleware echo.MiddlewareFunc) {
 			chat.GET("/:roomId/online-users", s.ChatWebSocketHandler.GetOnlineUsers) // 获取在线用户列表
 		}
 		protected.GET("/chat/:roomId/ws", s.ChatWebSocketHandler.HandleWebSocket)
+		customer := protected.Group("/customer")
+		{
+			customer.POST("/session", s.CustomerServiceHandler.CreateOrGetSession)             // 用户创建会话
+			customer.GET("/sessions", s.CustomerServiceHandler.GetAllSessions)                 // 管理员获取会话列表
+			customer.PUT("/sessions/:sessionId", s.CustomerServiceHandler.UpdateSessionStatus) // 更新状态
+		}
 	}
 }
