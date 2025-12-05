@@ -20,8 +20,9 @@ type OAuthProvider struct {
 	ClientSecret string   `json:"client_secret"`
 	RedirectURL  string   `json:"redirect_url"`
 	Scopes       []string `json:"scopes"`
-	AuthURL      string   `json:"auth_url"`  // For custom OAuth providers
-	TokenURL     string   `json:"token_url"` // For custom OAuth providers
+	AuthURL      string   `json:"auth_url"`           // For custom OAuth providers
+	TokenURL     string   `json:"token_url"`          // For custom OAuth providers
+	AgentID      string   `json:"agent_id,omitempty"` // 企业微信必填
 }
 
 type AuthConfig struct {
@@ -29,11 +30,12 @@ type AuthConfig struct {
 	TokenExpiry   int    `json:"token_expiry"`   // in hours
 	RefreshExpiry int    `json:"refresh_expiry"` // in hours
 	OAuth         struct {
-		Google   OAuthProvider            `json:"google"`
-		GitHub   OAuthProvider            `json:"github"`
-		Facebook OAuthProvider            `json:"facebook"`
-		Wechat   OAuthProvider            `json:"wechat"`
-		Custom   map[string]OAuthProvider `json:"custom"`
+		Google           OAuthProvider            `json:"google"`
+		GitHub           OAuthProvider            `json:"github"`
+		Facebook         OAuthProvider            `json:"facebook"`
+		Wechat           OAuthProvider            `json:"wechat"`
+		EnterpriseWeChat OAuthProvider            `json:"en_wechat"`
+		Custom           map[string]OAuthProvider `json:"custom"`
 	} `json:"oauth"`
 }
 
