@@ -6,8 +6,8 @@ type Room struct {
 	ID          uint      `json:"id" gorm:"primaryKey"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	Type        string    `json:"type"`               // code, whiteboard, chat, video
-	Privacy     string    `json:"privacy"`            // public, private, password
+	Type        string    `json:"type"`               // chat
+	Privacy     string    `json:"privacy"`            // public, private, password,customer
 	Password    string    `json:"password"`           // 密码不返回给前端
 	Language    string    `json:"language,omitempty"` // 仅 code 类型有
 	OwnerID     uint      `json:"owner_id"`
