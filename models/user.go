@@ -9,6 +9,7 @@ type User struct {
 	Password   string    `json:"-"`        // For local auth, hashed
 	Provider   string    `json:"provider"` // google, github, facebook, local, custom
 	ProviderID string    `json:"provider_id"`
+	Type       string    `json:"type"` // admin，merchant(商家),client(客户)
 	Avatar     string    `json:"avatar"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`

@@ -123,7 +123,7 @@ func (s *AuthService) LoginLocal(email, password string) (*models.User, error) {
 	return &user, nil
 }
 
-func (s *AuthService) FindOrCreateOAuthUser(userInfo *OAuthUserInfo) (*models.User, error) {
+func (s *AuthService) FindOrCreateOAuthUser(userInfo *OAuthUserInfo, userType string) (*models.User, error) {
 	var user models.User
 
 	// Try to find existing user
@@ -144,6 +144,7 @@ func (s *AuthService) FindOrCreateOAuthUser(userInfo *OAuthUserInfo) (*models.Us
 		Provider:   userInfo.Provider,
 		ProviderID: userInfo.ID,
 		Avatar:     userInfo.Avatar,
+		Type:       userType,
 	}
 
 	if err := s.Db.Create(&user).Error; err != nil {
