@@ -129,7 +129,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	var req struct {
 		Email      string `json:"email" validate:"required,email"`
 		Password   string `json:"password" validate:"required"`
-		RememberMe bool   `json:"remember_me"` // 1. 新增字段
+		RememberMe bool   `json:"rememberMe"`
 	}
 
 	if err := c.Bind(&req); err != nil {
