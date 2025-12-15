@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -131,26 +130,21 @@ func (s *OAuthService) GetAuthURL(provider, state string) (string, error) {
 }
 
 func (s *OAuthService) GetWeChatAuthURL(state string) (string, error) {
-	// 个人微信可以直接用 oauth2.Config（标准 OAuth2）
 	cfg, ok := s.providers["wechat"]
 	if !ok {
-		return "", fmt.Errorf("wechat (personal) config not found")
+		return "", fmt.Errorf("wechat config not found")
 	}
-	// 舔加 #wechat_redirect
-	authURL := cfg.AuthCodeURL(state,
-		oauth2.AccessTypeOffline,
-		// 公众号网页授权必须加这个参数，否则会 40163 code been used
-		oauth2.SetAuthURLParam("response_type", "code"),
-	)
-	// 公众号网页授权必须在 URL 后面强制加 #wechat_redirect
-	if !strings.Contains(authURL, "#wechat_redirect") {
-		if strings.Contains(authURL, "?") {
-			authURL += "&"
-		} else {
-			authURL += "?"
-		}
-		authURL += "#wechat_redirect"
+	if len(cfg.Scopes) == 0 || cfg.Scopes[0] != "snsapi_login" {
+		return "", fmt.Errorf("PC 扫码登录必须使用 snsapi_login 权限，请检查配置")
 	}
+	baseURL := "https://open.weixin.qq.com/connect/qrconnect"
+	params := url.Values{}
+	params.Add("appid", cfg.ClientID)
+	params.Add("redirect_uri", cfg.RedirectURL)
+	params.Add("response_type", "code")
+	params.Add("scope", "snsapi_login")
+	params.Add("state", state)
+	authURL := fmt.Sprintf("%s?%s#wechat_redirect", baseURL, params.Encode())
 	return authURL, nil
 }
 

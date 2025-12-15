@@ -164,7 +164,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		}
 		passwordCookie := &http.Cookie{
 			Name:     "remembered_password",
-			Value:    req.Email,
+			Value:    req.Password,
 			Path:     "/",
 			Expires:  time.Now().Add(3 * 24 * time.Hour), // 3天
 			HttpOnly: false,

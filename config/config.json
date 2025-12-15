@@ -21,8 +21,8 @@
       },
       "facebook": {},
       "wechat": {
-        "client_id": "111",
-        "client_secret": "agag",
+        "client_id": "wxf6b0e5db4b9fc4ad",
+        "client_secret": "59d779fa953b3c3f9067a7dfd81aef4d",
         "redirect_url": "http://localhost:5173/auth/callback/wechat",
         "scopes": ["snsapi_login"]
       },
