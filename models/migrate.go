@@ -8,6 +8,7 @@ func AutoMigrateAll(db *gorm.DB) error {
 		&Room{},
 		&Message{},
 		&CustomerSession{},
+		&MerchantInfo{},
 		&PetCategory{},
 		&Pet{},
 		&PetImage{},
@@ -18,6 +19,9 @@ func AutoMigrateAll(db *gorm.DB) error {
 		&CategoryCoupon{},
 		&PetCoupon{},
 		&UserCoupon{},
+		&Favorite{},
+		&Cart{},
+		&MerchantFollow{},
 	)
 	if err != nil {
 		return err

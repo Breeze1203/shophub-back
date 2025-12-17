@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (s *Server) SetupRoutes(authMiddleware echo.MiddlewareFunc) {
+func (s *Server) SetupRoutes(authMiddleware echo.MiddlewareFunc, adminMiddleware echo.MiddlewareFunc) {
 	e := s.Echo
 	api := e.Group("/api/v1")
 	// Auth routes (unprotected)
@@ -20,14 +20,19 @@ func (s *Server) SetupRoutes(authMiddleware echo.MiddlewareFunc) {
 		auth.GET("/oauth/:provider", s.AuthHandler.OAuthLogin)
 		auth.GET("/oauth/:provider/callback", s.AuthHandler.OAuthCallback)
 	}
-
-	// Protected routes (apply authMiddleware to all below)
+	// 公开路由
+	public := api.Group("/public")
+	{
+		public.GET("/categories", s.CategoryHandler.GetCategories)        // 获取分类树
+		public.GET("/categories/all", s.CategoryHandler.GetAllCategories) // 获取所有分类
+		public.GET("/categories/:id", s.CategoryHandler.GetCategoryByID)  // 获取分类详情
+	}
+	// 需要认证
 	protected := api.Group("")
 	protected.Use(authMiddleware)
 	{
 		// User routes
 		protected.GET("/user", s.AuthHandler.GetCurrentUser)
-
 		// Rooms routes
 		rooms := protected.Group("/rooms")
 		{
@@ -50,5 +55,10 @@ func (s *Server) SetupRoutes(authMiddleware echo.MiddlewareFunc) {
 			customer.GET("/sessions", s.CustomerServiceHandler.GetAllSessions)                 // 管理员获取会话列表
 			customer.PUT("/sessions/:sessionId", s.CustomerServiceHandler.UpdateSessionStatus) // 更新状态
 		}
+		admin := e.Group("/admin")
+		admin.Use(adminMiddleware)
+		admin.POST("/categories", s.CategoryHandler.CreateCategory)       // 创建分类
+		admin.PUT("/categories/:id", s.CategoryHandler.UpdateCategory)    // 更新分类
+		admin.DELETE("/categories/:id", s.CategoryHandler.DeleteCategory) // 删除分类
 	}
 }

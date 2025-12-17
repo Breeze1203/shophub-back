@@ -23,6 +23,7 @@ type Server struct {
 	RoomHandler            *handlers.RoomHandler
 	ChatWebSocketHandler   *handlers.ChatWebSocketHandler
 	CustomerServiceHandler *handlers.CustomerServiceHandler
+	CategoryHandler        *handlers.CategoryServiceHandler
 }
 
 func NewServer() *Server {
@@ -57,6 +58,7 @@ func NewServer() *Server {
 	customerHandler := handlers.NewCustomerServiceHandler(db)
 	authHandler := handlers.NewAuthHandler(authService, oauthService)
 	roomHandler := handlers.NewRoomHandler(roomService)
+	categoryHandler := handlers.NewCategoryHandler(db)
 	chatWebSocketHandler := handlers.NewChatWebSocketHandler(db, redis.GetRedis().Client)
 	s := &Server{
 		Echo:                   e,
@@ -66,10 +68,12 @@ func NewServer() *Server {
 		RoomHandler:            roomHandler,
 		ChatWebSocketHandler:   chatWebSocketHandler,
 		CustomerServiceHandler: customerHandler,
+		CategoryHandler:        categoryHandler,
 	}
 	// --- 设置路由 ---
 	authMiddleware := custommiddleware.AuthMiddleware(authService)
-	s.SetupRoutes(authMiddleware)
+	adminMiddleware := custommiddleware.AdminAuthMiddleware()
+	s.SetupRoutes(authMiddleware, adminMiddleware)
 	return s
 }
 

@@ -45,7 +45,6 @@ func (h *AuthHandler) OAuthLogin(c echo.Context) error {
 			"error": err.Error(),
 		})
 	}
-	fmt.Println("authURL:", authURL)
 	return c.JSON(http.StatusOK, map[string]string{
 		"auth_url": authURL,
 	})

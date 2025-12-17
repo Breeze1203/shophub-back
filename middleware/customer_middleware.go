@@ -52,3 +52,24 @@ func AuthMiddleware(authService *services.AuthService) echo.MiddlewareFunc {
 		}
 	}
 }
+
+func AdminAuthMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			user, ok := c.Get("user").(*models.User)
+			if !ok {
+				return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+					"code":    401,
+					"message": "未授权访问",
+				})
+			}
+			if user.Type != "admin" {
+				return c.JSON(http.StatusForbidden, map[string]interface{}{
+					"code":    403,
+					"message": "需要管理员权限",
+				})
+			}
+			return next(c)
+		}
+	}
+}
