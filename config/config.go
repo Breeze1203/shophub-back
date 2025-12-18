@@ -34,7 +34,7 @@ type AuthConfig struct {
 		GitHub           OAuthProvider            `json:"github"`
 		Facebook         OAuthProvider            `json:"facebook"`
 		Wechat           OAuthProvider            `json:"wechat"`
-		EnterpriseWeChat OAuthProvider            `json:"en_wechat"`
+		EnterpriseWeChat OAuthProvider            `json:"workchat"`
 		Custom           map[string]OAuthProvider `json:"custom"`
 	} `json:"oauth"`
 }

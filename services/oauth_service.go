@@ -90,7 +90,7 @@ func NewOAuthService(config *config.AuthConfig) *OAuthService {
 	}
 	// Enterprise WeChat OAuth
 	if config.OAuth.EnterpriseWeChat.ClientID != "" {
-		service.providers["en_wechat"] = &oauth2.Config{
+		service.providers["workchat"] = &oauth2.Config{
 			ClientID:     config.OAuth.EnterpriseWeChat.ClientID,
 			ClientSecret: config.OAuth.EnterpriseWeChat.ClientSecret,
 			RedirectURL:  config.OAuth.EnterpriseWeChat.RedirectURL,
@@ -116,7 +116,7 @@ func NewOAuthService(config *config.AuthConfig) *OAuthService {
 }
 
 func (s *OAuthService) GetAuthURL(provider, state string) (string, error) {
-	if provider == "en_wechat" {
+	if provider == "workchat" {
 		return s.GetEnWeChatAuthURL(state)
 	}
 	if provider == "wechat" {
@@ -150,7 +150,7 @@ func (s *OAuthService) GetWeChatAuthURL(state string) (string, error) {
 
 // 获取企业微信认证的url
 func (s *OAuthService) GetEnWeChatAuthURL(state string) (string, error) {
-	cfg, ok := s.providers["en_wechat"]
+	cfg, ok := s.providers["workchat"]
 	if !ok {
 		return "", fmt.Errorf("wechat config not found")
 	}
@@ -171,7 +171,7 @@ func (s *OAuthService) GetEnWeChatAuthURL(state string) (string, error) {
 
 func (s *OAuthService) ExchangeCode(provider, code string) (*oauth2.Token, error) {
 	// 非oauth2标准特殊处理
-	if provider == "en_wechat" {
+	if provider == "workchat" {
 		return s.handleWeChatEnterpriseCallback(code)
 	}
 	if provider == "wechat" {
@@ -211,7 +211,7 @@ func (s *OAuthService) handleWeChatPersonalCallback(code string) (*oauth2.Token,
 
 // 获取企业微信的token
 func (s *OAuthService) handleWeChatEnterpriseCallback(code string) (*oauth2.Token, error) {
-	cfg, ok := s.providers["en_wechat"]
+	cfg, ok := s.providers["workchat"]
 	if !ok {
 		return nil, fmt.Errorf("enterprise wechat config not found")
 	}
@@ -312,7 +312,7 @@ func (s *OAuthService) GetUserInfo(provider string, token *oauth2.Token) (*OAuth
 		return s.getFacebookUserInfo(token)
 	case "wechat":
 		return s.getEnWeChatUserInfo(token)
-	case "en_wechat":
+	case "en_workchat":
 		return s.getEnWeChatUserInfo(token)
 	default:
 		return s.getCustomUserInfo(provider, token)
@@ -419,7 +419,7 @@ func (s *OAuthService) GetAvailableProviders() []string {
 	return providers
 }
 
-// getEnWeChatUserInfo 获取企业微信用户详细信息 支持：企业微信（en_wechat） 和 个人微信公众号（wechat）两种
+// getEnWeChatUserInfo 获取企业微信用户详细信息 支持：企业微信（workchat） 和 个人微信公众号（wechat）两种
 func (s *OAuthService) getEnWeChatUserInfo(token *oauth2.Token) (*OAuthUserInfo, error) {
 	// 先判断是哪种微信（从 token.Extra 里拿标记最稳）
 	providerInterface := token.Extra("provider")
@@ -432,7 +432,7 @@ func (s *OAuthService) getEnWeChatUserInfo(token *oauth2.Token) (*OAuthUserInfo,
 		return s.getPersonalWeChatUserInfo(token)
 	}
 	provider := providerInterface.(string)
-	if provider == "en_wechat" {
+	if provider == "workchat" {
 		return s.getEnterpriseWeChatUserInfo(token)
 	}
 	// 默认走个人微信公众号
@@ -496,7 +496,7 @@ func (s *OAuthService) getEnterpriseWeChatUserInfo(token *oauth2.Token) (*OAuthU
 		Name:     u.Name,
 		Email:    u.Email,
 		Avatar:   u.Avatar,
-		Provider: "en_wechat", // 标记是企业微信
+		Provider: "workchat", // 标记是企业微信
 	}, nil
 }
 

@@ -26,10 +26,10 @@
         "redirect_url": "http://localhost:5173/auth/callback/wechat",
         "scopes": ["snsapi_login"]
       },
-      "en_wechat": {
+      "workchat": {
         "client_id": "ww1234567890abcdef",
         "client_secret": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0",
-        "redirect_url": "http://localhost:5173/auth/callback/en_wechat",
+        "redirect_url": "http://localhost:5173/auth/callback/workchat",
         "scopes": ["snsapi_userinfo"]
       },
       "custom": {
