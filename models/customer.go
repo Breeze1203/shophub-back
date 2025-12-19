@@ -11,6 +11,7 @@ type CustomerSession struct {
 	UnreadCount int       `json:"unread_count" gorm:"default:0"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+	SessionType uint `json:"session_type"` // admin 0,customer 1
 	// 关联
 	User User `json:"user" gorm:"foreignKey:UserID"`
 }

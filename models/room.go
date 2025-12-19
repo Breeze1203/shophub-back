@@ -7,7 +7,7 @@ type Room struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Type        string    `json:"type"`               // chat
-	Privacy     string    `json:"privacy"`            // public, private, password,customer
+	Privacy     string    `json:"privacy"`            // public, private, password,merchant(商家),client(客户)
 	Password    string    `json:"password"`           // 密码不返回给前端
 	Language    string    `json:"language,omitempty"` // 仅 code 类型有
 	OwnerID     uint      `json:"owner_id"`
@@ -18,6 +18,6 @@ type Room struct {
 
 type RoomWithUser struct {
 	Room
-	OwnerName   string `json:"owner_name" gorm:"column:username"` // 明确告诉 GORM 映射 username 列
+	OwnerName   string `json:"owner_name" gorm:"column:username"` 
 	OnlineUsers uint   `json:"online_users"`
 }

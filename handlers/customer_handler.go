@@ -23,14 +23,26 @@ func NewCustomerServiceHandler(db *gorm.DB) *CustomerServiceHandler {
 func (h *CustomerServiceHandler) CreateOrGetSession(c echo.Context) error {
 	user := c.Get("user").(*models.User)
 	var session models.CustomerSession
+	var req struct {
+		SessionType uint `json:"session_type"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid request",
+		})
+	}
 	// 查找会话并预加载 Room
 	err := h.db.Where("user_id = ?", user.ID).First(&session).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		prefix := "客户"
+		if user.Type == "merchant" {
+			prefix = "商家"
+		}
 		// 创建房间
 		room := models.Room{
-			Name:        fmt.Sprintf("客户 %s", user.Username),
-			Description: "客户服务",
-			Privacy:     "customer",
+			Name:       fmt.Sprintf("%s %s", prefix, user.Username),
+			Description: fmt.Sprintf("%s %s 服务", prefix, user.Username),
+			Privacy:     user.Type,
 			Type:        "chat",
 		}
 		if err := h.db.Create(&room).Error; err != nil {
@@ -41,11 +53,12 @@ func (h *CustomerServiceHandler) CreateOrGetSession(c echo.Context) error {
 
 		// 创建新会话
 		session = models.CustomerSession{
-			UserID:    user.ID,
-			RoomID:    room.ID,
-			Status:    "pending",
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+			UserID:      user.ID,
+			RoomID:      room.ID,
+			Status:      "pending",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			SessionType: req.SessionType,
 		}
 		if err := h.db.Create(&session).Error; err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{
