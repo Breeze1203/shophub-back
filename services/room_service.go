@@ -1,10 +1,12 @@
 package services
 
 import (
+	"LiteAdmin/config"
 	"LiteAdmin/models"
 	"LiteAdmin/redis"
 	"context"
 	"errors"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -26,10 +28,11 @@ type CreateRoomDTO struct {
 }
 
 type RoomService struct {
-	db *gorm.DB
+	db  *gorm.DB
+	cfg *config.RedisConfig
 }
 
-func NewRoomService(db *gorm.DB) *RoomService {
+func NewRoomService(db *gorm.DB, cfg *config.RedisConfig) *RoomService {
 	return &RoomService{db: db}
 }
 
@@ -73,7 +76,7 @@ func (s *RoomService) ListRooms() ([]models.RoomWithUser, error) {
 	}
 	for i := 0; i < len(results); i++ {
 		ctx := context.Background()
-		users, redisErr := redis.GetRedis().GetOnlineUsers(ctx, results[i].Type, results[i].ID)
+		users, redisErr := redis.GetRedis(s.cfg).GetOnlineUsers(ctx, results[i].Type, results[i].ID)
 		if redisErr != nil {
 			continue
 		}

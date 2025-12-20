@@ -54,12 +54,12 @@ func NewServer() *Server {
 	}))
 	authService := services.NewAuthService(db, &cfg.Auth)
 	oauthService := services.NewOAuthService(&cfg.Auth)
-	roomService := services.NewRoomService(db)
+	roomService := services.NewRoomService(db,&cfg.RedisConfig)
 	customerHandler := handlers.NewCustomerServiceHandler(db)
 	authHandler := handlers.NewAuthHandler(authService, oauthService)
 	roomHandler := handlers.NewRoomHandler(roomService)
 	categoryHandler := handlers.NewCategoryHandler(db)
-	chatWebSocketHandler := handlers.NewChatWebSocketHandler(db, redis.GetRedis().Client)
+	chatWebSocketHandler := handlers.NewChatWebSocketHandler(db, redis.GetRedis(&cfg.RedisConfig).Client)
 	s := &Server{
 		Echo:                   e,
 		DB:                     db,

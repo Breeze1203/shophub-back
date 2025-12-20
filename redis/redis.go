@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"LiteAdmin/config"
 	"context"
 	"fmt"
 	"time"
@@ -12,23 +13,14 @@ type RedisClient struct {
 	Client *redis.Client
 }
 
-// RedisConfig 用于配置 Redis 连接
-type RedisConfig struct {
-	Addr     string // addr
-	Password string // 密码
-	DB       int    // 数据库编号
-	PoolSize int    // 连接池大小
-}
 
-// NewRedisClient 初始化并返回一个新的 RedisClient 实例
-func NewRedisClient(cfg *RedisConfig) (*RedisClient, error) {
+func NewRedisClient(cfg *config.RedisConfig) (*RedisClient, error) {
 	// 创建 Redis 客户端
 	client := redis.NewClient(&redis.Options{
 		Addr:     cfg.Addr,
 		Password: cfg.Password, // 密码，没有则留空
 		DB:       cfg.DB,       // 数据库
 		PoolSize: cfg.PoolSize, // 连接池大小
-		// 可选：添加超时配置
 		DialTimeout:  5 * time.Second,
 		ReadTimeout:  3 * time.Second,
 		WriteTimeout: 3 * time.Second,
@@ -49,14 +41,8 @@ func NewRedisClient(cfg *RedisConfig) (*RedisClient, error) {
 }
 
 // Redis客户端
-func GetRedis() *RedisClient {
-	cfg := RedisConfig{
-		Addr:     "localhost:6379",
-		Password: "123",
-		DB:       0,
-		PoolSize: 10,
-	}
-	client, err := NewRedisClient(&cfg)
+func GetRedis(cfg *config.RedisConfig) *RedisClient {
+	client, err := NewRedisClient(cfg)
 	if err != nil {
 		return nil
 	}

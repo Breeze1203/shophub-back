@@ -221,7 +221,7 @@ func (s *OAuthService) handleWeChatEnterpriseCallback(code string) (*oauth2.Toke
 	}
 	// 用 code 换 userid
 	userInfoURL := fmt.Sprintf(
-		"https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=%s&code=%s&agentid=%s",
+		"https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=%s&code=%s&agentid=%d",
 		accessToken,
 		code,
 		1000053,
@@ -408,6 +408,8 @@ func (s *OAuthService) getFacebookUserInfo(token *oauth2.Token) (*OAuthUserInfo,
 func (s *OAuthService) getCustomUserInfo(provider string, token *oauth2.Token) (*OAuthUserInfo, error) {
 	// For custom providers, you'll need to specify the user info endpoint
 	// This is a generic implementation
+	fmt.Printf("授权应用:%s", provider)
+	fmt.Printf("授权令牌:%s", token.AccessToken)
 	return nil, fmt.Errorf("custom provider user info not implemented")
 }
 

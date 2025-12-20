@@ -119,17 +119,17 @@ type PetSpecification struct {
 type Discount struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
 	MerchantID  uint           `gorm:"not null;index" json:"merchant_id"` // 商家ID
-	Name        string         `gorm:"type:varchar(200);not null" json:"name"`
+	Name        string         `gorm:"type:varchar(200);not null" json:"name"` // 
 	Type        string         `gorm:"type:varchar(20);not null;index" json:"type"` // percentage/fixed/newprice
 	Value       int64          `gorm:"not null" json:"value"`
-	StartTime   time.Time      `gorm:"index" json:"start_time"`
-	EndTime     time.Time      `gorm:"index" json:"end_time"`
+	StartTime   time.Time      `gorm:"index" json:"start_time"` //开始时间
+	EndTime     time.Time      `gorm:"index" json:"end_time"` // 结束时间
 	Status      string         `gorm:"type:varchar(20);default:'active';index" json:"status"` // active/inactive/expired
-	MinAmount   int64          `gorm:"default:0" json:"min_amount"`
+	MinAmount   int64          `gorm:"default:0" json:"min_amount"` 
 	MaxDiscount int64          `gorm:"default:0" json:"max_discount"`
 	UsageLimit  int            `gorm:"default:0" json:"usage_limit"`
 	UsedCount   int            `gorm:"default:0" json:"used_count"`
-	Description string         `gorm:"type:text" json:"description"`
+	Description string         `gorm:"type:text" json:"description"` // 活动描述
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`

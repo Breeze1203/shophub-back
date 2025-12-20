@@ -2,6 +2,15 @@
   "database": {
     "dsn": "host=localhost user=pt password=pt@123 dbname=lite_admin port=5432 sslmode=disable"
   },
+  "kafka":{
+    "brokers":["192.168.0.186"],
+    "username":"pt",
+    "password":"123",
+    "use_tls":true,
+    "cert_file":" ",
+    "key_file":" ",
+    "ca_file":" "
+  },
   "auth": {
     "jwt_secret": "your-secret-key-change-this-in-json",
     "token_expiry": 24,

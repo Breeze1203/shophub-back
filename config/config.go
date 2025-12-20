@@ -9,7 +9,27 @@ import (
 type Config struct {
 	Database DatabaseConfig `json:"database"`
 	Auth     AuthConfig     `json:"auth"`
+	KafkaConfig KafkaConfig `json:"kafka"`
+	RedisConfig RedisConfig `json:"redis"`
 }
+
+type KafkaConfig struct {
+    Brokers  []string `json:"brokers"`
+    Username string `json:"username"`
+    Password string `json:"password"`
+    UseTLS   bool `json:"use_tls"`
+    CertFile string `json:"cert_file"`
+    KeyFile  string `json:"key_file"`
+    CAFile   string `json:"ca_file"`
+}
+
+
+type RedisConfig struct {
+	Addr     string `json:"addr"`
+	Password string `jsom:"password"`
+	DB       int  `json:"db"`
+	PoolSize int  `json:"poolsize"`
+} 
 
 type DatabaseConfig struct {
 	DSN string `json:"dsn"`
