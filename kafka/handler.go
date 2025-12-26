@@ -16,7 +16,6 @@ type OrderMessage struct {
 }
 
 type OrderHandler struct {
-    // 注入业务服务
 }
 
 func NewOrderHandler() *OrderHandler {

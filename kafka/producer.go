@@ -20,13 +20,12 @@ func NewProducer(brokers []string, config *sarama.Config) (*Producer, error) {
 	return &Producer{producer: producer}, nil
 }
 
-func (p *Producer) SendMessage(topic string, key string, value interface{}) error {
+func (p *Producer) SendMessage(topic string, key string,value OrderMessage) error {
 	// 序列化消息
 	jsonValue, err := json.Marshal(value)
 	if err != nil {
 		return err
 	}
-
 	msg := &sarama.ProducerMessage{
 		Topic: topic,
 		Key:   sarama.StringEncoder(key),
@@ -38,7 +37,6 @@ func (p *Producer) SendMessage(topic string, key string, value interface{}) erro
 		log.Printf("Failed to send message: %v", err)
 		return err
 	}
-
 	log.Printf("Message sent to partition %d at offset %d", partition, offset)
 	return nil
 }

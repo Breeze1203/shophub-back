@@ -2,24 +2,19 @@ package kafka
 
 import (
     "context" 
-    "log"
-    "sync"
-    
     "github.com/IBM/sarama"
+    "log"
 )
 
 type Consumer struct {
     consumerGroup sarama.ConsumerGroup
     topics        []string
-    handler       MessageHandler
+    handler       OrderHandler
 }
 
-type MessageHandler interface {
-    Handle(ctx context.Context, message *sarama.ConsumerMessage) error
-}
 
 func NewConsumer(brokers []string, groupID string, topics []string, 
-                 config *sarama.Config, handler MessageHandler) (*Consumer, error) {
+                 config *sarama.Config, handler OrderHandler) (*Consumer, error) {
     consumerGroup, err := sarama.NewConsumerGroup(brokers, groupID, config)
     if err != nil {
         return nil, err
@@ -32,28 +27,7 @@ func NewConsumer(brokers []string, groupID string, topics []string,
     }, nil
 }
 
-func (c *Consumer) Start(ctx context.Context) error {
-    wg := &sync.WaitGroup{}
-    wg.Add(1)
-    
-    go func() {
-        defer wg.Done()
-        for {
-            if err := c.consumerGroup.Consume(ctx, c.topics, c); err != nil {
-                log.Printf("Error from consumer: %v", err)
-            }
-            
-            if ctx.Err() != nil {
-                return
-            }
-        }
-    }()
-    
-    wg.Wait()
-    return nil
-}
 
-// 实现 ConsumerGroupHandler 接口
 func (c *Consumer) Setup(sarama.ConsumerGroupSession) error {
     return nil
 }
@@ -62,23 +36,29 @@ func (c *Consumer) Cleanup(sarama.ConsumerGroupSession) error {
     return nil
 }
 
-func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, 
-                                claim sarama.ConsumerGroupClaim) error {
+func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
     for message := range claim.Messages() {
-        log.Printf("Received message: topic=%s, partition=%d, offset=%d",
-            message.Topic, message.Partition, message.Offset)
-        
-        // 调用业务处理器
-        if err := c.handler.Handle(session.Context(), message); err != nil {
-            log.Printf("Error handling message: %v", err)
-            // 根据业务需求决定是否继续或重试
+        err := c.handler.Handle(session.Context(), message)
+        if err == nil {
+            session.MarkMessage(message, "")
+        } else {
+            log.Printf("Failed to process message: %v", err)
         }
-        
-        // 标记消息已处理
-        session.MarkMessage(message, "")
     }
-    
     return nil
+}
+
+func (c *Consumer) Start(ctx context.Context) error {
+    for {
+        if ctx.Err() != nil {
+            return nil
+        }
+        if err := c.consumerGroup.Consume(ctx, c.topics, c); err != nil {
+            if err == sarama.ErrClosedConsumerGroup {
+                return nil
+            }
+        }
+    }
 }
 
 func (c *Consumer) Close() error {

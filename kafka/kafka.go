@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"os"
-
 	"github.com/IBM/sarama"
 )
 
@@ -18,13 +17,14 @@ func NewSaramaConfig(cfg *config.KafkaConfig) (*sarama.Config, error) {
     config.Producer.Retry.Max = 3
     config.Producer.Return.Successes = true
     config.Producer.Partitioner = sarama.NewRandomPartitioner
+    config.Producer.Interceptors=[]sarama.ProducerInterceptor{NewOrderInterceptor()}
     
     // 消费者配置
     config.Consumer.Return.Errors = true
     config.Consumer.Offsets.Initial = sarama.OffsetNewest
     config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
     
-    // ========== 认证配置 ==========
+    // 认证配置
     
     // 1. SASL/PLAIN 认证
     if cfg.Username != "" && cfg.Password != "" {
