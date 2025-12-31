@@ -3,10 +3,12 @@ package server
 import (
 	"LiteAdmin/config"
 	"LiteAdmin/handlers"
+	"LiteAdmin/limiter"
 	custommiddleware "LiteAdmin/middleware"
 	"LiteAdmin/models"
 	"LiteAdmin/redis"
 	"LiteAdmin/services"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -54,7 +56,7 @@ func NewServer() *Server {
 	}))
 	authService := services.NewAuthService(db, &cfg.Auth)
 	oauthService := services.NewOAuthService(&cfg.Auth)
-	roomService := services.NewRoomService(db,&cfg.RedisConfig)
+	roomService := services.NewRoomService(db, &cfg.RedisConfig)
 	customerHandler := handlers.NewCustomerServiceHandler(db)
 	authHandler := handlers.NewAuthHandler(authService, oauthService)
 	roomHandler := handlers.NewRoomHandler(roomService)
@@ -70,10 +72,20 @@ func NewServer() *Server {
 		CustomerServiceHandler: customerHandler,
 		CategoryHandler:        categoryHandler,
 	}
-	// --- 设置路由 ---
+	// --- 设置路由中间件 ---
+	strategy := &limiter.TokenBucketStrategy{}
+	limitManager := limiter.NewManager(redis.GetRedis(&cfg.RedisConfig).Client, strategy)
+	limiterConfig := custommiddleware.RateLimitConfig{
+		Limit:  10,              // 桶容量 / 限制次数
+		Window: 1 * time.Second, // 时间单位
+		KeyFunc: func(c echo.Context) string {
+			return c.RealIP() + ":" + c.Path()
+		},
+	}
 	authMiddleware := custommiddleware.AuthMiddleware(authService)
 	adminMiddleware := custommiddleware.AdminAuthMiddleware()
-	s.SetupRoutes(authMiddleware, adminMiddleware)
+	limitMiddleware := custommiddleware.NewRateLimitMiddleware(limitManager, limiterConfig)
+	s.SetupRoutes(authMiddleware, adminMiddleware, limitMiddleware)
 	return s
 }
 

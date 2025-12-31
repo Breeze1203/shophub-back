@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (s *Server) SetupRoutes(authMiddleware echo.MiddlewareFunc, adminMiddleware echo.MiddlewareFunc) {
+func (s *Server) SetupRoutes(authMiddleware echo.MiddlewareFunc, adminMiddleware echo.MiddlewareFunc, limiter echo.MiddlewareFunc) {
 	e := s.Echo
 	api := e.Group("/api/v1")
 	// Auth routes (unprotected)
@@ -13,8 +13,8 @@ func (s *Server) SetupRoutes(authMiddleware echo.MiddlewareFunc, adminMiddleware
 		// Get available OAuth providers
 		auth.GET("/providers", s.AuthHandler.GetProviders)
 		// Local authentication
-		auth.POST("/register", s.AuthHandler.Register)
-		auth.POST("/login", s.AuthHandler.Login)
+		auth.POST("/register", s.AuthHandler.Register, limiter)
+		auth.POST("/login", s.AuthHandler.Login, limiter)
 		auth.POST("/refresh", s.AuthHandler.RefreshToken)
 		// OAuth routes
 		auth.GET("/oauth/:provider", s.AuthHandler.OAuthLogin)
